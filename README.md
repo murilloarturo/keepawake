@@ -9,7 +9,7 @@
 
 <br/>
 
-<img src="docs/assets/keepawake-banner.svg" alt="KeepAwake logo banner" width="760">
+<img src="docs/assets/keepawake-banner.png" alt="KeepAwake logo banner" width="760">
 
 **A tiny macOS menu bar app for keeping your Mac awake when sleep would get in the way.**
 

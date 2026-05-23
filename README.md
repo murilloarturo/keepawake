@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![KeepAwake macOS menu bar popover](docs/assets/keepawake-hero.jpg)
+<img src="docs/assets/keepawake-screenshot.png" alt="KeepAwake macOS menu bar popover" width="394">
 
 **A tiny macOS menu bar app for keeping your Mac awake when sleep would get in the way.**
 

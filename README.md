@@ -2,19 +2,32 @@
 
 <div align="center">
 
+[![Platform](https://img.shields.io/badge/platform-macOS%2013%2B-lightgrey)](#supported-runtime-environments)
+[![Swift](https://img.shields.io/badge/Swift-6-orange)](Package.swift)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Network](https://img.shields.io/badge/network-not%20required-blue)](#why-keepawake)
+
+<br/>
+
 <img src="docs/assets/keepawake-banner.svg" alt="KeepAwake logo banner" width="760">
 
 **A tiny macOS menu bar app for keeping your Mac awake when sleep would get in the way.**
 
-[![Platform](https://img.shields.io/badge/platform-macOS%2013%2B-lightgrey)](#requirements)
-[![Swift](https://img.shields.io/badge/Swift-6-orange)](Package.swift)
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-
 </div>
 
-KeepAwake wraps macOS' built-in `/usr/bin/caffeinate` command in a focused menu bar interface. Pick the sleep-prevention flags you want, turn KeepAwake on, and let it quietly hold your Mac awake until you turn it off again.
+KeepAwake is a focused macOS wrapper around the built-in `/usr/bin/caffeinate` command. It gives you a clean menu bar interface for choosing exactly how your Mac should stay awake, then starts and stops `caffeinate` for you.
 
-It is useful for long downloads, presentations, builds, file transfers, remote sessions, monitoring dashboards, or any other moment where you want your Mac to stay available without changing permanent system settings.
+<!-- keepawake readme beginning -->
+
+## What is KeepAwake?
+
+KeepAwake is a native SwiftUI menu bar app for temporary sleep prevention. It has two practical modes of use:
+
+**Keep the Mac running:** For long-running tasks such as builds, downloads, file transfers, scripts, backups, model training, or remote sessions. You can prevent idle sleep, disk sleep, or system sleep without changing permanent macOS power settings.
+
+**Keep the display available:** For presentations, dashboards, demos, video calls, monitoring screens, and other work where the screen should remain visible. You can prevent display sleep or declare user activity through the same menu.
+
+When KeepAwake is off, your Mac returns to its normal sleep behavior.
 
 ## Preview
 
@@ -22,25 +35,18 @@ It is useful for long downloads, presentations, builds, file transfers, remote s
   <img src="docs/assets/keepawake-screenshot.png" alt="KeepAwake macOS menu bar popover" width="394">
 </p>
 
-## Features
+## Supported runtime environments
 
-- Lives in the macOS menu bar with no Dock icon.
-- Starts and stops a background `caffeinate` process.
-- Lets you choose the exact `caffeinate` flags before starting.
-- Locks selected flags while running so the active process stays predictable.
-- Shows current status and active flags at a glance.
-- Can open automatically at login using macOS Login Items.
-- Uses only local macOS system APIs; no network service or account required.
+KeepAwake is intentionally small and macOS-only.
 
-## Requirements
+| Runtime environment | Method | Controls |
+| --- | --- | --- |
+| macOS 13 or newer<sup>[1]</sup> | `/usr/bin/caffeinate` | Display sleep, idle sleep, disk sleep, system sleep, user activity |
+| macOS Login Items | `SMAppService.mainApp` | Optional Open at Login setting |
 
-- macOS 13 or newer
-- Xcode or the Swift toolchain for building from source
-- XcodeGen if you want to regenerate the Xcode project from `project.yml`
+## Installing
 
-## Quick Start
-
-Clone the repo and build the app bundle:
+Clone the repository and build the app bundle:
 
 ```bash
 git clone https://github.com/murilloarturo/keepawake.git
@@ -49,9 +55,37 @@ cd keepawake
 open dist/KeepAwake.app
 ```
 
-The app appears in the menu bar. Look for the moon/bolt icon.
+The app appears in the macOS menu bar. Look for the moon/bolt icon.
 
-## Usage
+> [!NOTE]
+> KeepAwake currently builds locally from source. If macOS warns that the app is from an unidentified developer, that is expected for a local unsigned build.
+
+## Why KeepAwake?
+
+<dl>
+  <dt>Non-disruptive</dt>
+  <dd>KeepAwake uses macOS' own <code>caffeinate</code> command. It does not wiggle the mouse, press fake keys, or fight the system with background tricks.</dd>
+
+  <dt>Easy to stop</dt>
+  <dd>Turning KeepAwake off terminates the background <code>caffeinate</code> process. Your normal sleep settings take over again.</dd>
+
+  <dt>Precise control</dt>
+  <dd>Choose only the flags you need: display, idle, disk, system, or user activity. The selected flags are locked while the process is running so the active behavior is predictable.</dd>
+
+  <dt>Menu bar native</dt>
+  <dd>The app stays out of the Dock and lives where a utility should: in the menu bar.</dd>
+
+  <dt>Open at Login</dt>
+  <dd>KeepAwake can register itself with macOS Login Items so it is ready after you sign in.</dd>
+
+  <dt>No account, no network</dt>
+  <dd>KeepAwake runs locally and does not require a web service, login, telemetry, or network access.</dd>
+
+  <dt>Permissive license</dt>
+  <dd>The project is available under the MIT License.</dd>
+</dl>
+
+## App usage
 
 1. Open KeepAwake from the menu bar.
 2. Select the sleep-prevention options you want.
@@ -61,7 +95,7 @@ The app appears in the menu bar. Look for the moon/bolt icon.
 
 To launch KeepAwake automatically after signing in, enable **Open at Login** in the app. If macOS asks for approval, KeepAwake will show a shortcut to **System Settings > General > Login Items & Extensions**.
 
-## Caffeinate Flags
+## Caffeinate flags
 
 KeepAwake exposes the common `caffeinate` flags directly:
 
@@ -74,6 +108,42 @@ KeepAwake exposes the common `caffeinate` flags directly:
 | `-u` | Declare user activity | Tells macOS the user is active. |
 
 If no flags are selected, `caffeinate` still runs with its default behavior.
+
+## Command line equivalent
+
+KeepAwake is a graphical front end for commands like this:
+
+```bash
+caffeinate -d -i -m -s -u
+```
+
+Use the app when you want to toggle these behaviors quickly from the menu bar, see which flags are active, and keep the setup ready at login.
+
+## Where KeepAwake is useful
+
+**Long-running work**
+- Xcode builds
+- Package installs
+- Data processing scripts
+- Model training or local automation
+
+**Transfers and downloads**
+- Large file downloads
+- Backups
+- External drive operations
+- Cloud sync catch-up
+
+**Presentations and monitoring**
+- Demos
+- Dashboards
+- Video calls
+- Status screens
+
+**Remote access**
+- SSH sessions
+- Screen sharing
+- Remote maintenance
+- Keeping a Mac reachable while a task completes
 
 ## Development
 
@@ -102,7 +172,7 @@ Regenerate the Xcode project from `project.yml`:
 xcodegen generate
 ```
 
-## Project Structure
+## Project structure
 
 ```text
 Sources/KeepAwake/        SwiftUI menu bar app
@@ -113,10 +183,37 @@ project.yml               XcodeGen project definition
 dist/                     Built app bundle
 ```
 
+## Links
+
+- GitHub: [github.com/murilloarturo/keepawake](https://github.com/murilloarturo/keepawake)
+- Issues: [github.com/murilloarturo/keepawake/issues](https://github.com/murilloarturo/keepawake/issues)
+- License: [MIT License](LICENSE)
+
+## Roadmap ideas
+
+These are natural next steps for the app:
+
+| Area | Idea |
+| --- | --- |
+| Distribution | Signed release builds or a downloadable DMG |
+| App identity | Native app icon and improved README/banner artwork |
+| Control | Optional timer or auto-stop duration |
+| Presets | Saved flag combinations for common workflows |
+| Visibility | Show active flags directly in the menu bar title |
+| Automation | Apple Shortcuts or command-line hooks |
+
 ## Contributing
 
 Issues and pull requests are welcome. Keep changes small, focused, and easy to test. For UI changes, include a short note describing the user-facing behavior.
 
 ## License
 
-KeepAwake is available under the [MIT License](LICENSE).
+The contents of this repository are available under the [MIT License](LICENSE), which is permissive and allows you to use, modify, distribute, and include the code in commercial or non-commercial projects.
+
+---------------
+
+## Footnotes
+
+| | |
+| --- | --- |
+| <sup>[1]</sup> | KeepAwake targets macOS 13 or newer because it uses SwiftUI menu bar APIs and the modern ServiceManagement login item API. |

@@ -2,7 +2,7 @@
 
 <div align="center">
 
-<img src="docs/assets/keepawake-screenshot.png" alt="KeepAwake macOS menu bar popover" width="394">
+<img src="docs/assets/keepawake-banner.svg" alt="KeepAwake logo banner" width="760">
 
 **A tiny macOS menu bar app for keeping your Mac awake when sleep would get in the way.**
 
@@ -15,6 +15,12 @@
 KeepAwake wraps macOS' built-in `/usr/bin/caffeinate` command in a focused menu bar interface. Pick the sleep-prevention flags you want, turn KeepAwake on, and let it quietly hold your Mac awake until you turn it off again.
 
 It is useful for long downloads, presentations, builds, file transfers, remote sessions, monitoring dashboards, or any other moment where you want your Mac to stay available without changing permanent system settings.
+
+## Preview
+
+<p align="center">
+  <img src="docs/assets/keepawake-screenshot.png" alt="KeepAwake macOS menu bar popover" width="394">
+</p>
 
 ## Features
 

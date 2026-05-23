@@ -42,7 +42,7 @@ KeepAwake is intentionally small and macOS-only.
 | Runtime environment | Method | Controls |
 | --- | --- | --- |
 | macOS 13 or newer<sup>[1]</sup> | `/usr/bin/caffeinate` | Display sleep, idle sleep, disk sleep, system sleep, user activity |
-| macOS Login Items | `SMAppService.mainApp` | Optional Open at Login setting |
+| macOS Login Items | `SMAppService.mainApp` | Optional Launch at Login setting |
 
 ## Installing
 
@@ -75,7 +75,7 @@ The app appears in the macOS menu bar. Look for the moon/bolt icon.
   <dt>Menu bar native</dt>
   <dd>The app stays out of the Dock and lives where a utility should: in the menu bar.</dd>
 
-  <dt>Open at Login</dt>
+  <dt>Launch at Login</dt>
   <dd>KeepAwake can register itself with macOS Login Items so it is ready after you sign in.</dd>
 
   <dt>No account, no network</dt>
@@ -88,12 +88,12 @@ The app appears in the macOS menu bar. Look for the moon/bolt icon.
 ## App usage
 
 1. Open KeepAwake from the menu bar.
-2. Select the sleep-prevention options you want.
+2. Select at least one sleep-prevention option.
 3. Click **Turn KeepAwake On**.
 4. Leave it running while your task finishes.
 5. Click **Turn KeepAwake Off** when your Mac can sleep normally again.
 
-To launch KeepAwake automatically after signing in, enable **Open at Login** in the app. If macOS asks for approval, KeepAwake will show a shortcut to **System Settings > General > Login Items & Extensions**.
+To launch KeepAwake automatically after signing in, enable **Launch at Login** in the app. If macOS asks for approval, KeepAwake will show a shortcut to **System Settings > General > Login Items & Extensions**.
 
 ## Caffeinate flags
 
@@ -107,7 +107,7 @@ KeepAwake exposes the common `caffeinate` flags directly:
 | `-s` | Prevent system sleep | Keeps the system awake while on AC power. |
 | `-u` | Declare user activity | Tells macOS the user is active. |
 
-If no flags are selected, `caffeinate` still runs with its default behavior.
+KeepAwake requires at least one flag before the start button is enabled.
 
 ## Command line equivalent
 

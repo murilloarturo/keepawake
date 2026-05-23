@@ -16,6 +16,15 @@ final class KeepAwakeTests: XCTestCase {
     func testCaffeinateFlagsSummaryShowsNoneWhenEmpty() {
         let flags = CaffeinateFlags()
         XCTAssertTrue(flags.arguments.isEmpty)
+        XCTAssertFalse(flags.hasSelectedFlags)
         XCTAssertEqual(flags.summary, "(none)")
+    }
+
+    func testCaffeinateFlagsReportsSelectedFlags() {
+        var flags = CaffeinateFlags()
+        flags.preventIdleSleep = true
+
+        XCTAssertTrue(flags.hasSelectedFlags)
+        XCTAssertEqual(flags.summary, "-i")
     }
 }

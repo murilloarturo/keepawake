@@ -21,6 +21,10 @@ struct CaffeinateFlags: Equatable, Sendable {
         return flags
     }
 
+    var hasSelectedFlags: Bool {
+        !arguments.isEmpty
+    }
+
     var summary: String {
         let flags = arguments
         return flags.isEmpty ? "(none)" : flags.joined(separator: " ")
@@ -42,6 +46,10 @@ final class CaffeinateController: ObservableObject {
 
     func start() {
         guard process == nil else { return }
+        guard flags.hasSelectedFlags else {
+            statusText = "Select a flag"
+            return
+        }
 
         let newProcess = Process()
         newProcess.executableURL = URL(fileURLWithPath: "/usr/bin/caffeinate")
@@ -171,8 +179,8 @@ struct MenuBarView: View {
 
             VStack(alignment: .leading, spacing: 16) {
                 heroStateCard
-                actionButtons
                 selectedFlagsSection
+                actionButtons
                 controlsSection
                 loginItemSection
                 quitButton
@@ -266,7 +274,7 @@ struct MenuBarView: View {
 
     private var controlsSection: some View {
         HStack(spacing: 10) {
-            Label(controller.isRunning ? "Flags locked while running" : "Flags can be changed before starting", systemImage: controller.isRunning ? "lock.fill" : "slider.horizontal.3")
+            Label(controlStatusText, systemImage: controller.isRunning ? "lock.fill" : "slider.horizontal.3")
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
@@ -281,7 +289,7 @@ struct MenuBarView: View {
                 get: { loginItemController.isOpenAtLoginEnabled },
                 set: { loginItemController.setOpenAtLogin($0) }
             )) {
-                HStack(alignment: .firstTextBaseline, spacing: 10) {
+                HStack(alignment: .center, spacing: 10) {
                     Image(systemName: "power.circle.fill")
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundStyle(loginItemController.isOpenAtLoginEnabled ? .green : .secondary)
@@ -289,7 +297,7 @@ struct MenuBarView: View {
                         .background(Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Open at Login")
+                        Text("Launch at Login")
                             .font(.subheadline.weight(.medium))
                         Text(loginItemController.statusText)
                             .font(.caption)
@@ -324,15 +332,16 @@ struct MenuBarView: View {
 
     private var actionButtons: some View {
         Button {
+            guard canToggle else { return }
             controller.toggle()
         } label: {
             HStack(spacing: 10) {
-                Image(systemName: controller.isRunning ? "stop.circle.fill" : "play.circle.fill")
+                Image(systemName: actionIconName)
                     .font(.title3.weight(.bold))
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(controller.isRunning ? "Turn KeepAwake Off" : "Turn KeepAwake On")
+                    Text(actionTitle)
                         .font(.headline.weight(.semibold))
-                    Text(controller.isRunning ? "Allow your Mac to sleep again" : "Prevent your Mac from sleeping")
+                    Text(actionSubtitle)
                         .font(.caption)
                         .opacity(0.92)
                 }
@@ -343,7 +352,7 @@ struct MenuBarView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(controller.isRunning ? Color.orange : Color.green)
+                    .fill(actionTint)
             )
             .foregroundStyle(.white)
         }
@@ -367,6 +376,35 @@ struct MenuBarView: View {
 
     private var displayedArguments: [String] {
         controller.isRunning ? controller.activeArguments : controller.flags.arguments
+    }
+
+    private var canToggle: Bool {
+        controller.isRunning || controller.flags.hasSelectedFlags
+    }
+
+    private var actionTint: Color {
+        if controller.isRunning { return .orange }
+        return controller.flags.hasSelectedFlags ? .green : .gray
+    }
+
+    private var actionIconName: String {
+        if controller.isRunning { return "stop.circle.fill" }
+        return controller.flags.hasSelectedFlags ? "play.circle.fill" : "checklist"
+    }
+
+    private var actionTitle: String {
+        if controller.isRunning { return "Turn KeepAwake Off" }
+        return controller.flags.hasSelectedFlags ? "Turn KeepAwake On" : "Select a Flag"
+    }
+
+    private var actionSubtitle: String {
+        if controller.isRunning { return "Allow your Mac to sleep again" }
+        return controller.flags.hasSelectedFlags ? "Prevent your Mac from sleeping" : "Choose at least one option above"
+    }
+
+    private var controlStatusText: String {
+        if controller.isRunning { return "Flags locked while running" }
+        return controller.flags.hasSelectedFlags ? "Flags can be changed before starting" : "Select at least one flag to start"
     }
 
     @ViewBuilder
@@ -415,7 +453,7 @@ struct RightCheckToggleStyle: ToggleStyle {
             guard !isLocked else { return }
             configuration.isOn.toggle()
         } label: {
-            HStack(spacing: 10) {
+            HStack(alignment: .center, spacing: 10) {
                 configuration.label
                 Spacer()
                 Image(systemName: configuration.isOn ? "checkmark.circle.fill" : "circle")

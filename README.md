@@ -7,6 +7,7 @@ KeepAwake is a small macOS menu bar app that starts and stops `/usr/bin/caffeina
 - Runs as a menu bar app (no Dock icon)
 - Simple UI with common `caffeinate` flags
 - Start/Stop button to launch or terminate the background `caffeinate` process
+- Open at Login toggle using macOS Login Items
 
 ## Included flags
 

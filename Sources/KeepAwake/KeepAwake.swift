@@ -1,4 +1,5 @@
 import AppKit
+import ServiceManagement
 import SwiftUI
 
 struct CaffeinateFlags: Equatable, Sendable {
@@ -80,6 +81,73 @@ final class CaffeinateController: ObservableObject {
     }
 }
 
+@MainActor
+final class LoginItemController: ObservableObject {
+    @Published private(set) var isOpenAtLoginEnabled = false
+    @Published private(set) var statusText = "Checking..."
+    @Published private(set) var detailText: String?
+    @Published private(set) var needsApproval = false
+
+    private let service = SMAppService.mainApp
+
+    init() {
+        refresh()
+    }
+
+    func setOpenAtLogin(_ isEnabled: Bool) {
+        do {
+            let status = service.status
+
+            if isEnabled {
+                if status != .enabled && status != .requiresApproval {
+                    try service.register()
+                }
+            } else if status == .enabled || status == .requiresApproval {
+                try service.unregister()
+            }
+
+            refresh()
+        } catch {
+            refresh()
+            detailText = error.localizedDescription
+        }
+    }
+
+    func refresh() {
+        switch service.status {
+        case .enabled:
+            isOpenAtLoginEnabled = true
+            needsApproval = false
+            statusText = "Enabled"
+            detailText = nil
+        case .requiresApproval:
+            isOpenAtLoginEnabled = true
+            needsApproval = true
+            statusText = "Needs Approval"
+            detailText = "Allow KeepAwake in Login Items."
+        case .notRegistered:
+            isOpenAtLoginEnabled = false
+            needsApproval = false
+            statusText = "Disabled"
+            detailText = nil
+        case .notFound:
+            isOpenAtLoginEnabled = false
+            needsApproval = false
+            statusText = "Unavailable"
+            detailText = "Run KeepAwake from its app bundle."
+        @unknown default:
+            isOpenAtLoginEnabled = false
+            needsApproval = false
+            statusText = "Unknown"
+            detailText = nil
+        }
+    }
+
+    func openLoginItemsSettings() {
+        SMAppService.openSystemSettingsLoginItems()
+    }
+}
+
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -88,6 +156,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
 struct MenuBarView: View {
     @ObservedObject var controller: CaffeinateController
+    @ObservedObject var loginItemController: LoginItemController
 
     var body: some View {
         ZStack {
@@ -105,11 +174,15 @@ struct MenuBarView: View {
                 actionButtons
                 selectedFlagsSection
                 controlsSection
+                loginItemSection
                 quitButton
             }
             .padding(16)
         }
         .frame(width: 390)
+        .onAppear {
+            loginItemController.refresh()
+        }
     }
 
     private var heroStateCard: some View {
@@ -200,6 +273,53 @@ struct MenuBarView: View {
             Spacer()
         }
         .padding(.horizontal, 2)
+    }
+
+    private var loginItemSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Toggle(isOn: Binding(
+                get: { loginItemController.isOpenAtLoginEnabled },
+                set: { loginItemController.setOpenAtLogin($0) }
+            )) {
+                HStack(alignment: .firstTextBaseline, spacing: 10) {
+                    Image(systemName: "power.circle.fill")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(loginItemController.isOpenAtLoginEnabled ? .green : .secondary)
+                        .frame(width: 30, height: 30)
+                        .background(Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Open at Login")
+                            .font(.subheadline.weight(.medium))
+                        Text(loginItemController.statusText)
+                            .font(.caption)
+                            .foregroundStyle(loginItemController.needsApproval ? .orange : .secondary)
+                    }
+                }
+            }
+            .toggleStyle(RightCheckToggleStyle(isLocked: false))
+
+            if let detailText = loginItemController.detailText {
+                Text(detailText)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            if loginItemController.needsApproval {
+                Button {
+                    loginItemController.openLoginItemsSettings()
+                } label: {
+                    Label("Open Login Items", systemImage: "gearshape.fill")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+            }
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color.primary.opacity(0.055))
+        )
     }
 
     private var actionButtons: some View {
@@ -321,10 +441,11 @@ struct RightCheckToggleStyle: ToggleStyle {
 struct KeepAwakeApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @StateObject private var controller = CaffeinateController()
+    @StateObject private var loginItemController = LoginItemController()
 
     var body: some Scene {
         MenuBarExtra(controller.isRunning ? "KeepAwake ON" : "KeepAwake OFF", systemImage: controller.isRunning ? "bolt.fill" : "moon.zzz.fill") {
-            MenuBarView(controller: controller)
+            MenuBarView(controller: controller, loginItemController: loginItemController)
         }
         .menuBarExtraStyle(.window)
     }
